@@ -27,13 +27,13 @@
   .cabecera{padding:12px 16px; font-weight:700; font-size:16px; color:#fff; display:flex; align-items:center; justify-content:space-between; gap:8px;}
   .cabecera.verde{background:var(--verde);} .cabecera.naranja{background:var(--naranja);}
   .cabecera.azul{background:var(--azul);} .cabecera.morado{background:var(--morado);} .cabecera.rosa{background:var(--rosa);}
-  .cabecera .btn-mini{background:rgba(255,255,255,.25); border:none; color:#fff; border-radius:8px; padding:6px 10px; font-size:13px; font-weight:700;}
   .fila{display:flex; justify-content:space-between; align-items:center; padding:10px 16px; border-bottom:1px solid #eee; gap:10px;}
   .fila:last-child{border-bottom:none;}
   .fila label{font-size:15px; flex:1.4;}
   .fila input[type=number], .fila input[type=text]{flex:1; min-width:0; font-size:17px; padding:8px 10px; border:2px solid #ddd; border-radius:8px; text-align:right; -webkit-appearance:none;}
   .fila input[type=text]{text-align:left; font-weight:600;}
   .fila input:focus{border-color:var(--azul); outline:none;}
+  .fila input[readonly]{background:#f0f0f0; color:#757575; border-color:#e0e0e0;}
   .total{display:flex; justify-content:space-between; padding:14px 16px; font-weight:800; font-size:17px; background:var(--gris);}
   .subtitulo{padding:8px 16px 2px; font-size:12px; color:#757575; text-transform:uppercase; letter-spacing:.5px;}
   .deuda-bloque{border:1.5px dashed #90caf9; margin:10px 12px; border-radius:10px; padding:6px 0; position:relative;}
@@ -44,7 +44,6 @@
   .mal{background:var(--rojo-claro); color:var(--rojo); border:2px solid var(--rojo);}
   .resumen-detalle{margin:0 16px 16px; background:#fff; border-radius:14px; box-shadow:0 2px 6px rgba(0,0,0,.1); overflow:hidden;}
   .btn-principal{display:block; width:calc(100% - 24px); margin:16px 12px; background:#1565c0; color:#fff; border:none; padding:14px 18px; border-radius:12px; font-size:16px; font-weight:800;}
-  .btn-secundario{display:block; width:calc(100% - 24px); margin:8px 12px; background:#fff; color:var(--azul); border:2px solid var(--azul); padding:12px 18px; border-radius:12px; font-size:15px; font-weight:700;}
   .btn-reset{display:block; margin:20px auto 0; background:#fff; color:var(--rojo); border:2px solid var(--rojo); padding:10px 18px; border-radius:20px; font-size:14px; font-weight:700;}
   .nota{font-size:12px; color:#9e9e9e; text-align:center; margin:14px 20px;}
   .leyenda{margin:16px 12px; padding:14px 16px; background:#fff; border-radius:14px; box-shadow:0 2px 6px rgba(0,0,0,.1);}
@@ -67,7 +66,7 @@
   .mensaje-motivacional{margin:0 16px 16px; padding:14px 16px; border-radius:12px; font-size:14px; line-height:1.5;}
   .mensaje-motivacional.positivo{background:#e8f5e9; border:2px solid var(--verde); color:#1b5e20;}
   .mensaje-motivacional.alerta{background:#fff3e0; border:2px solid #e65100; color:#bf360c;}
-  .banner-modo{margin:12px; padding:12px 16px; border-radius:12px; font-size:13px; font-weight:600; display:flex; justify-content:space-between; align-items:center; gap:10px;}
+  .banner-modo{margin:12px; padding:12px 16px; border-radius:12px; font-size:13px; font-weight:600; display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;}
   .banner-modo.historico{background:#e1bee7; color:#4a148c;}
   .banner-modo button{background:#4a148c; color:#fff; border:none; border-radius:8px; padding:6px 10px; font-size:12px; font-weight:700;}
   .respaldo{margin:16px 12px; padding:14px 16px; background:#fff; border-radius:14px; box-shadow:0 2px 6px rgba(0,0,0,.1);}
@@ -75,6 +74,15 @@
   .respaldo p{font-size:12px; color:#757575; margin:4px 0 10px;}
   .fila-botones{display:flex; gap:10px;}
   .fila-botones button, .fila-botones label{flex:1; text-align:center; background:var(--gris); border:none; border-radius:10px; padding:10px; font-size:13px; font-weight:700; color:#424242;}
+
+  #overlayModal{display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:50; align-items:center; justify-content:center; padding:20px;}
+  #overlayModal.visible{display:flex;}
+  .caja-modal{background:#fff; border-radius:16px; max-width:340px; width:100%; padding:22px 20px; box-shadow:0 10px 30px rgba(0,0,0,.3);}
+  .caja-modal p{font-size:15px; line-height:1.5; margin:0 0 18px; color:#212121; white-space:pre-line;}
+  .caja-modal .botones-modal{display:flex; gap:10px;}
+  .caja-modal .botones-modal button{flex:1; padding:12px; border-radius:10px; font-size:14px; font-weight:700; border:none;}
+  .caja-modal .btn-cancelar-modal{background:#eee; color:#424242;}
+  .caja-modal .btn-aceptar-modal{background:#1565c0; color:#fff;}
 </style>
 </head>
 <body>
@@ -198,21 +206,47 @@
   <div id="evolucionLista"></div>
 </div>
 
+<div id="overlayModal">
+  <div class="caja-modal">
+    <p id="textoModal"></p>
+    <div class="botones-modal" id="botonesModal"></div>
+  </div>
+</div>
+
 <script>
 const CLAVE_LS = 'controlFinancieroMX_v3';
 const fmt = new Intl.NumberFormat('es-MX', {style:'currency', currency:'MXN', maximumFractionDigits:0});
 
-let estado = {
-  borrador: {},
-  deudas: [],
-  historial: [],
-  modo: 'actual',      // 'actual' o 'historico'
-  claveVista: null      // clave del mes histórico que se está viendo
-};
+let estado = { borrador:{}, deudas:[], historial:[], modo:'actual', claveVista:null };
 
 const CAMPOS_NUM = ['salario','otrosIngresos','renta','agua','luz','gas','telefono','internet','transporte',
   'gasolina','seguros','comida','entretenimiento','salud','cuidado','educacion','mascotas','ropa','gimnasio',
   'mantenimiento','netflix','spotify','youtube','otrosGastos','ahorro'];
+
+// ---------- Modal propio (reemplaza confirm()/alert() para que los botones digan exactamente lo que el texto promete) ----------
+function mostrarModal(mensaje, botones){
+  const overlay = document.getElementById('overlayModal');
+  document.getElementById('textoModal').textContent = mensaje;
+  const cont = document.getElementById('botonesModal');
+  cont.innerHTML = '';
+  botones.forEach(b=>{
+    const btn = document.createElement('button');
+    btn.textContent = b.texto;
+    btn.className = b.tipo==='aceptar' ? 'btn-aceptar-modal' : 'btn-cancelar-modal';
+    btn.onclick = ()=>{ overlay.classList.remove('visible'); b.accion && b.accion(); };
+    cont.appendChild(btn);
+  });
+  overlay.classList.add('visible');
+}
+function confirmarModal(mensaje, textoSi, textoNo, alConfirmar, alCancelar){
+  mostrarModal(mensaje, [
+    {texto: textoNo||'Cancelar', tipo:'cancelar', accion: alCancelar},
+    {texto: textoSi||'Aceptar', tipo:'aceptar', accion: alConfirmar}
+  ]);
+}
+function avisoModal(mensaje, alCerrar){
+  mostrarModal(mensaje, [{texto:'Entendido', tipo:'aceptar', accion: alCerrar}]);
+}
 
 function num(id){ const el=document.getElementById(id); if(!el) return 0; const v=parseFloat(el.value); return isNaN(v)?0:v; }
 
@@ -226,66 +260,56 @@ function cargarEstado(){
       estado.historial = guardado.historial || [];
     }catch(e){ console.warn('No se pudo leer el guardado previo', e); }
   }
-  if(estado.deudas.length===0){
-    estado.deudas = [ nuevaDeuda() ];
-  }
+  if(estado.deudas.length===0){ estado.deudas = [ nuevaDeuda() ]; }
 }
 
 function guardarEstado(){
-  const paraGuardar = { borrador: estado.borrador, deudas: estado.deudas, historial: estado.historial };
-  localStorage.setItem(CLAVE_LS, JSON.stringify(paraGuardar));
+  localStorage.setItem(CLAVE_LS, JSON.stringify({ borrador: estado.borrador, deudas: estado.deudas, historial: estado.historial }));
 }
 
 function nuevaDeuda(nombre, saldo, pago){
   return { id: 'd'+Math.random().toString(36).slice(2,9), nombre: nombre||'', saldo: saldo||0, pago: pago||0 };
 }
 
-function agregarDeuda(){
-  estado.deudas.push(nuevaDeuda());
-  renderDeudas();
-  calcular();
-}
+function agregarDeuda(){ estado.deudas.push(nuevaDeuda()); renderDeudas(); calcular(); }
 
 function quitarDeuda(id){
-  if(estado.deudas.length<=1){ alert('Debe quedar al menos una fila de deuda (puedes dejarla en 0 si no tienes deuda).'); return; }
-  if(!confirm('¿Quitar esta deuda de tu lista?')) return;
-  estado.deudas = estado.deudas.filter(d=>d.id!==id);
-  renderDeudas();
-  calcular();
+  if(estado.deudas.length<=1){ avisoModal('Debe quedar al menos una fila de deuda. Si no tienes deuda, déjala en 0.'); return; }
+  confirmarModal('¿Quitar esta deuda de tu lista?', 'Sí, quitar', 'No, dejarla', ()=>{
+    estado.deudas = estado.deudas.filter(d=>d.id!==id);
+    renderDeudas(); calcular();
+  });
 }
 
 function renderDeudas(){
+  const soloLectura = estado.modo!=='actual';
   const cont = document.getElementById('deudasContenedor');
   cont.innerHTML = '';
   estado.deudas.forEach(d=>{
     const div = document.createElement('div');
     div.className = 'deuda-bloque';
     div.innerHTML = `
-      <button class="quitar" onclick="quitarDeuda('${d.id}')">✕ quitar</button>
-      <div class="fila"><label>Nombre</label><input type="text" data-deuda="${d.id}" data-campo="nombre" placeholder="Ej. Tarjeta BBVA" value="${d.nombre||''}"></div>
-      <div class="fila"><label>Saldo pendiente</label><input type="number" data-deuda="${d.id}" data-campo="saldo" inputmode="decimal" value="${d.saldo||0}"></div>
-      <div class="fila"><label>Pago mensual</label><input type="number" data-deuda="${d.id}" data-campo="pago" inputmode="decimal" value="${d.pago||0}"></div>
+      ${soloLectura?'':'<button class="quitar" onclick="quitarDeuda(\''+d.id+'\')">✕ quitar</button>'}
+      <div class="fila"><label>Nombre</label><input type="text" data-deuda="${d.id}" data-campo="nombre" placeholder="Ej. Tarjeta BBVA" value="${d.nombre||''}" ${soloLectura?'readonly':''}></div>
+      <div class="fila"><label>Saldo pendiente</label><input type="number" data-deuda="${d.id}" data-campo="saldo" inputmode="decimal" value="${d.saldo||0}" ${soloLectura?'readonly':''}></div>
+      <div class="fila"><label>Pago mensual</label><input type="number" data-deuda="${d.id}" data-campo="pago" inputmode="decimal" value="${d.pago||0}" ${soloLectura?'readonly':''}></div>
     `;
     cont.appendChild(div);
   });
-  cont.querySelectorAll('input').forEach(inp=>{
-    inp.addEventListener('input', ()=>{
-      const d = estado.deudas.find(x=>x.id===inp.dataset.deuda);
-      if(!d) return;
-      const val = inp.dataset.campo==='nombre' ? inp.value : (parseFloat(inp.value)||0);
-      d[inp.dataset.campo] = val;
-      calcular();
+  if(!soloLectura){
+    cont.querySelectorAll('input').forEach(inp=>{
+      inp.addEventListener('input', ()=>{
+        const d = estado.deudas.find(x=>x.id===inp.dataset.deuda);
+        if(!d) return;
+        d[inp.dataset.campo] = inp.dataset.campo==='nombre' ? inp.value : (parseFloat(inp.value)||0);
+        calcular();
+      });
     });
-  });
+  }
 }
 
-function totalesDeudas(deudas){
-  return deudas.reduce((acc,d)=>{ acc.saldo+=Number(d.saldo)||0; acc.pago+=Number(d.pago)||0; return acc; }, {saldo:0, pago:0});
-}
-
-function ahorroHistoricoAcumulado(){
-  return estado.historial.reduce((s,h)=> s + (h.ahorro||0), 0);
-}
+function totalesDeudas(deudas){ return deudas.reduce((acc,d)=>{ acc.saldo+=Number(d.saldo)||0; acc.pago+=Number(d.pago)||0; return acc; }, {saldo:0, pago:0}); }
+function ahorroHistoricoAcumulado(){ return estado.historial.reduce((s,h)=> s + (h.ahorro||0), 0); }
 
 function totales(){
   const totalIngresos = num('salario') + num('otrosIngresos');
@@ -302,7 +326,7 @@ function mesesParaPagar(deuda, pago){ if(pago<=0 || deuda<=0) return null; retur
 function fechaEnMeses(meses){ const f=new Date(); f.setMonth(f.getMonth()+meses); return f.toLocaleDateString('es-MX',{year:'numeric',month:'long',day:'numeric'}); }
 
 function calcular(){
-  if(estado.modo!=='actual') return; // en modo histórico no se recalcula ni se autoguarda
+  if(estado.modo!=='actual') return;
   const t = totales();
   document.getElementById('totalIngresos').textContent = fmt.format(t.totalIngresos);
   document.getElementById('totalGastos').textContent = fmt.format(t.totalGastos);
@@ -362,23 +386,18 @@ function recogerBorrador(){
   CAMPOS_NUM.forEach(id=>{ const el=document.getElementById(id); data[id]= el? el.value : '0'; });
   return data;
 }
-
 function aplicarBorrador(data){
-  CAMPOS_NUM.forEach(id=>{
-    const el = document.getElementById(id);
-    if(el) el.value = (data && data[id]!==undefined) ? data[id] : '';
-  });
+  CAMPOS_NUM.forEach(id=>{ const el=document.getElementById(id); if(el) el.value = (data && data[id]!==undefined) ? data[id] : ''; });
+}
+function ponerSoloLecturaBorrador(soloLectura){
+  CAMPOS_NUM.forEach(id=>{ const el=document.getElementById(id); if(el){ if(soloLectura) el.setAttribute('readonly','readonly'); else el.removeAttribute('readonly'); } });
 }
 
-function nombreMesActual(){
-  const hoy = new Date();
-  const txt = hoy.toLocaleDateString('es-MX', {year:'numeric', month:'long'});
-  return txt.charAt(0).toUpperCase()+txt.slice(1);
-}
+function nombreMesActual(){ const hoy=new Date(); const txt=hoy.toLocaleDateString('es-MX',{year:'numeric',month:'long'}); return txt.charAt(0).toUpperCase()+txt.slice(1); }
 function claveMesActual(){ return new Date().toISOString().slice(0,7); }
 
 function guardarMes(){
-  if(estado.modo!=='actual'){ alert('Estás viendo un mes guardado. Toca "Volver al mes actual" antes de guardar.'); return; }
+  if(estado.modo!=='actual'){ avisoModal('Estás viendo un mes guardado. Toca "Volver al mes actual" antes de guardar.'); return; }
   const t = totales();
   const clave = claveMesActual();
   const yaExiste = estado.historial.some(h=>h.clave===clave);
@@ -389,31 +408,37 @@ function guardarMes(){
     ahorro: t.ahorro, disponible: t.disponible,
     deudasDetalle: JSON.parse(JSON.stringify(estado.deudas))
   };
-  if(yaExiste && !confirm('Ya guardaste datos de '+registro.etiqueta+'. ¿Reemplazarlos con los datos actuales?')) return;
-
-  const idx = estado.historial.findIndex(h=>h.clave===clave);
-  if(idx>=0) estado.historial[idx]=registro; else estado.historial.push(registro);
-
-  const actualizarSaldos = confirm('¿Actualizar el saldo pendiente de tus deudas restando lo que pagaste este mes? (Recomendado)\n\nToca "Aceptar" para actualizar, o "Cancelar" para dejar los saldos como están.');
-  if(actualizarSaldos){
-    estado.deudas.forEach(d=>{ d.saldo = Math.max(0, (Number(d.saldo)||0) - (Number(d.pago)||0)); });
+  const continuarGuardado = ()=>{
+    const idx = estado.historial.findIndex(h=>h.clave===clave);
+    if(idx>=0) estado.historial[idx]=registro; else estado.historial.push(registro);
+    confirmarModal(
+      '¿Quieres que reste de tus deudas lo que pagaste este mes?\n\nSi aceptas, el saldo pendiente bajará automáticamente para el próximo mes.',
+      'Sí, actualizar saldos', 'No, dejarlos igual',
+      ()=>{ estado.deudas.forEach(d=>{ d.saldo = Math.max(0, (Number(d.saldo)||0) - (Number(d.pago)||0)); }); finalizarGuardado(registro); },
+      ()=>{ finalizarGuardado(registro); }
+    );
+  };
+  if(yaExiste){
+    confirmarModal('Ya guardaste datos de '+registro.etiqueta+'.\n\n¿Quieres reemplazarlos con los datos actuales?', 'Sí, reemplazar', 'No, cancelar', continuarGuardado);
+  } else {
+    continuarGuardado();
   }
+}
 
+function finalizarGuardado(registro){
   guardarEstado();
   renderDeudas();
   renderEvolucion();
   actualizarSelectorMes();
   calcular();
-  alert('Mes guardado en tu evolución: '+registro.etiqueta);
-  mostrarPagina('evolucion');
+  avisoModal('Mes guardado en tu evolución: '+registro.etiqueta, ()=>{ mostrarPagina('evolucion'); });
 }
 
 function borrarMes(clave){
-  if(!confirm('¿Borrar este mes de tu evolución? No se puede deshacer.')) return;
-  estado.historial = estado.historial.filter(h=>h.clave!==clave);
-  guardarEstado();
-  renderEvolucion();
-  actualizarSelectorMes();
+  confirmarModal('¿Borrar este mes de tu evolución?\n\nNo se puede deshacer.', 'Sí, borrar', 'No, conservar', ()=>{
+    estado.historial = estado.historial.filter(h=>h.clave!==clave);
+    guardarEstado(); renderEvolucion(); actualizarSelectorMes();
+  });
 }
 
 function verMesHistorico(clave){
@@ -427,6 +452,7 @@ function verMesHistorico(clave){
   CAMPOS_NUM.filter(c=>!['salario','otrosIngresos','ahorro'].includes(c)).forEach(c=>{ const el=document.getElementById(c); if(el) el.value=''; });
   document.getElementById('otrosGastos').value = reg.gastos;
   document.getElementById('ahorro').value = reg.ahorro||0;
+  ponerSoloLecturaBorrador(true);
 
   estado.deudas = reg.deudasDetalle && reg.deudasDetalle.length ? JSON.parse(JSON.stringify(reg.deudasDetalle)) : [nuevaDeuda('Deuda (histórico)', reg.deuda, reg.pagoDeuda)];
   renderDeudas();
@@ -454,10 +480,29 @@ function verMesHistorico(clave){
   window.scrollTo(0,0);
 }
 
+function usarHistoricoComoActual(){
+  const reg = estado.historial.find(h=>h.clave===estado.claveVista);
+  if(!reg) return;
+  confirmarModal('Esto copiará los datos de '+reg.etiqueta+' al mes actual para que los corrijas y los vuelvas a guardar. ¿Continuar?', 'Sí, copiar', 'No, cancelar', ()=>{
+    estado.modo = 'actual'; estado.claveVista = null;
+    estado.borrador = { salario:'', otrosIngresos:String(reg.ingresos), otrosGastos:String(reg.gastos), ahorro:String(reg.ahorro||0) };
+    CAMPOS_NUM.forEach(c=>{ if(estado.borrador[c]===undefined) estado.borrador[c]='0'; });
+    estado.deudas = reg.deudasDetalle && reg.deudasDetalle.length ? JSON.parse(JSON.stringify(reg.deudasDetalle)) : [nuevaDeuda()];
+    ponerSoloLecturaBorrador(false);
+    aplicarBorrador(estado.borrador);
+    renderDeudas();
+    document.getElementById('btnGuardarMes').textContent = '✅ Guardar este mes en mi evolución';
+    document.getElementById('selectorMes').value = 'actual';
+    pintarBannerModo();
+    calcular();
+    avisoModal('Datos copiados. Corrígelos y toca "Guardar" cuando termines.');
+  });
+}
+
 function volverAMesActual(){
-  estado.modo = 'actual';
-  estado.claveVista = null;
+  estado.modo = 'actual'; estado.claveVista = null;
   cargarEstado();
+  ponerSoloLecturaBorrador(false);
   aplicarBorrador(estado.borrador);
   renderDeudas();
   document.getElementById('btnGuardarMes').textContent = '✅ Guardar este mes en mi evolución';
@@ -470,10 +515,8 @@ function pintarBannerModo(){
   const cont = document.getElementById('bannerModo');
   if(estado.modo==='historico'){
     const reg = estado.historial.find(h=>h.clave===estado.claveVista);
-    cont.innerHTML = `<div class="banner-modo historico"><span>👀 Estás viendo: <b>${reg?reg.etiqueta:''}</b> (guardado)</span><button onclick="volverAMesActual()">⬅ Volver al mes actual</button></div>`;
-  } else {
-    cont.innerHTML = '';
-  }
+    cont.innerHTML = `<div class="banner-modo historico"><span>👀 Viendo: <b>${reg?reg.etiqueta:''}</b> (guardado, solo lectura)</span><span><button onclick="usarHistoricoComoActual()" style="margin-right:6px;">✏️ Corregir</button><button onclick="volverAMesActual()">⬅ Volver</button></span></div>`;
+  } else { cont.innerHTML = ''; }
 }
 
 function actualizarSelectorMes(){
@@ -483,32 +526,26 @@ function actualizarSelectorMes(){
     historialOrdenado.map(h=>`<option value="${h.clave}">👀 ${h.etiqueta} (guardado)</option>`).join('');
   sel.value = estado.modo==='historico' ? estado.claveVista : 'actual';
 }
-
-function alCambiarSelector(){
-  const val = document.getElementById('selectorMes').value;
-  if(val==='actual') volverAMesActual();
-  else verMesHistorico(val);
-}
+function alCambiarSelector(){ const val = document.getElementById('selectorMes').value; if(val==='actual') volverAMesActual(); else verMesHistorico(val); }
 
 function reiniciar(){
-  if(estado.modo!=='actual'){ alert('Vuelve al mes actual primero para poder borrarlo.'); return; }
-  if(!confirm('¿Borrar solo lo escrito en el registro de este mes? (Tu historial guardado y tu lista de deudas NO se borran)')) return;
-  estado.borrador = {};
-  CAMPOS_NUM.forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
-  guardarEstado();
-  calcular();
+  if(estado.modo!=='actual'){ avisoModal('Vuelve al mes actual primero para poder borrarlo.'); return; }
+  confirmarModal('¿Borrar solo lo escrito en el registro de este mes?\n\nTu historial guardado y tu lista de deudas NO se borran.', 'Sí, borrar', 'No, cancelar', ()=>{
+    estado.borrador = {};
+    CAMPOS_NUM.forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+    guardarEstado();
+    calcular();
+  });
 }
 
 function exportarRespaldo(){
   const blob = new Blob([JSON.stringify(estado, null, 2)], {type:'application/json'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  const fecha = new Date().toISOString().slice(0,10);
-  a.href = url; a.download = 'respaldo_control_financiero_'+fecha+'.json';
+  a.href = url; a.download = 'respaldo_control_financiero_'+new Date().toISOString().slice(0,10)+'.json';
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
   URL.revokeObjectURL(url);
 }
-
 function importarRespaldo(ev){
   const archivo = ev.target.files[0];
   if(!archivo) return;
@@ -516,16 +553,17 @@ function importarRespaldo(ev){
   lector.onload = function(e){
     try{
       const datos = JSON.parse(e.target.result);
-      if(!confirm('Esto reemplazará todos tus datos actuales con los del respaldo. ¿Continuar?')) return;
-      estado.borrador = datos.borrador || {};
-      estado.deudas = datos.deudas && datos.deudas.length ? datos.deudas : [nuevaDeuda()];
-      estado.historial = datos.historial || [];
-      guardarEstado();
-      volverAMesActual();
-      renderEvolucion();
-      actualizarSelectorMes();
-      alert('Respaldo importado correctamente.');
-    }catch(err){ alert('Ese archivo no es un respaldo válido.'); }
+      confirmarModal('Esto reemplazará todos tus datos actuales con los del respaldo.\n\n¿Continuar?', 'Sí, reemplazar', 'No, cancelar', ()=>{
+        estado.borrador = datos.borrador || {};
+        estado.deudas = datos.deudas && datos.deudas.length ? datos.deudas : [nuevaDeuda()];
+        estado.historial = datos.historial || [];
+        guardarEstado();
+        volverAMesActual();
+        renderEvolucion();
+        actualizarSelectorMes();
+        avisoModal('Respaldo importado correctamente.');
+      });
+    }catch(err){ avisoModal('Ese archivo no es un respaldo válido.'); }
   };
   lector.readAsText(archivo);
   ev.target.value = '';
@@ -541,19 +579,12 @@ function renderEvolucion(){
   vacio.style.display='none'; wrap.style.display='block';
   document.getElementById('evolucionHead').innerHTML = '<th>Mes</th><th>Ingresos</th><th>Gastos</th><th>Deuda</th><th>Ahorro</th><th>Disponible</th>';
   document.getElementById('evolucionBody').innerHTML = historial.map(h=>`
-    <tr>
-      <td>${h.etiqueta}</td><td>${fmt.format(h.ingresos)}</td><td>${fmt.format(h.gastos)}</td>
+    <tr><td>${h.etiqueta}</td><td>${fmt.format(h.ingresos)}</td><td>${fmt.format(h.gastos)}</td>
       <td>${fmt.format(h.deuda)}</td><td>${fmt.format(h.ahorro||0)}</td>
-      <td style="color:${h.disponible>=0?'#2e7d32':'#c62828'}; font-weight:700;">${fmt.format(h.disponible)}</td>
-    </tr>`).join('');
+      <td style="color:${h.disponible>=0?'#2e7d32':'#c62828'}; font-weight:700;">${fmt.format(h.disponible)}</td></tr>`).join('');
   lista.innerHTML = historial.map(h => `
-    <div class="fila-mes">
-      <span>${h.etiqueta} · deuda: ${fmt.format(h.deuda)}</span>
-      <span class="acciones">
-        <button class="ver" onclick="verMesHistorico('${h.clave}')">Ver</button>
-        <button class="borrar" onclick="borrarMes('${h.clave}')">Borrar</button>
-      </span>
-    </div>`).join('');
+    <div class="fila-mes"><span>${h.etiqueta} · deuda: ${fmt.format(h.deuda)}</span>
+      <span class="acciones"><button class="ver" onclick="verMesHistorico('${h.clave}')">Ver</button><button class="borrar" onclick="borrarMes('${h.clave}')">Borrar</button></span></div>`).join('');
 }
 
 function mostrarPagina(nombre){
@@ -564,9 +595,7 @@ function mostrarPagina(nombre){
   window.scrollTo(0,0);
 }
 
-document.querySelectorAll('#paginaRegistro input[type=number]').forEach(el=>{
-  if(CAMPOS_NUM.includes(el.id)) el.addEventListener('input', calcular);
-});
+document.querySelectorAll('#paginaRegistro input[type=number]').forEach(el=>{ if(CAMPOS_NUM.includes(el.id)) el.addEventListener('input', calcular); });
 
 cargarEstado();
 aplicarBorrador(estado.borrador);
