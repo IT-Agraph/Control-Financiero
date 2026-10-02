@@ -21,7 +21,9 @@
   nav{display:flex; gap:8px; margin-top:10px;}
   nav button{flex:1; padding:10px 6px; border:none; border-radius:10px; font-size:14px; font-weight:700; background:rgba(255,255,255,.18); color:#fff;}
   nav button.activo{background:#fff; color:#1565c0;}
-  .mes-actual-tag{margin-top:10px; background:rgba(255,255,255,.18); border-radius:10px; padding:8px 10px; font-size:14px; font-weight:700;}
+  .mes-actual-tag{margin-top:10px; background:rgba(255,255,255,.18); border-radius:10px; padding:8px 10px; font-size:14px; font-weight:700; display:flex; justify-content:center; align-items:center; gap:8px; flex-wrap:wrap;}
+  .mes-actual-tag.corrigiendo{background:#fff3e0; color:#e65100;}
+  .mes-actual-tag button{background:rgba(255,255,255,.5); border:none; border-radius:8px; padding:5px 9px; font-size:12px; font-weight:700; color:#4a148c;}
   .pagina{display:none;} .pagina.activa{display:block;}
   .seccion{margin:16px 12px; border-radius:14px; overflow:hidden; box-shadow:0 2px 6px rgba(0,0,0,.12); background:#fff;}
   .cabecera{padding:12px 16px; font-weight:700; font-size:16px; color:#fff; display:flex; align-items:center; justify-content:space-between; gap:8px;}
@@ -33,7 +35,6 @@
   .fila input[type=number], .fila input[type=text]{flex:1; min-width:0; font-size:17px; padding:8px 10px; border:2px solid #ddd; border-radius:8px; text-align:right; -webkit-appearance:none;}
   .fila input[type=text]{text-align:left; font-weight:600;}
   .fila input:focus{border-color:var(--azul); outline:none;}
-  .fila input[readonly]{background:#f0f0f0; color:#757575; border-color:#e0e0e0;}
   .total{display:flex; justify-content:space-between; padding:14px 16px; font-weight:800; font-size:17px; background:var(--gris);}
   .subtitulo{padding:8px 16px 2px; font-size:12px; color:#757575; text-transform:uppercase; letter-spacing:.5px;}
   .deuda-bloque{border:1.5px dashed #90caf9; margin:10px 12px; border-radius:10px; padding:6px 0; position:relative;}
@@ -69,16 +70,12 @@
   .barra-progreso-relleno{background:linear-gradient(90deg,#1565c0,#6a1b9a); height:100%; border-radius:20px; transition:width .4s;}
   .barra-progreso-texto{font-size:12px; color:#616161; margin-top:6px; text-align:center;}
   .milestone{margin:0 16px 0; padding:10px 14px; border-radius:10px; background:#fce4ec; color:#ad1457; font-size:13px; font-weight:700; text-align:center;}
-
-  /* --- Resumen general (Evolución) --- */
   .resumen-general{margin:16px 12px; border-radius:14px; overflow:hidden; box-shadow:0 2px 6px rgba(0,0,0,.12); background:linear-gradient(135deg,#1565c0,#6a1b9a); color:#fff; padding:6px 0 14px;}
   .resumen-general h3{margin:12px 16px 10px; font-size:15px;}
   .rg-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:0 16px;}
   .rg-item{background:rgba(255,255,255,.15); border-radius:10px; padding:10px; text-align:center;}
   .rg-item .num{font-size:17px; font-weight:800; display:block;}
   .rg-item .lbl{font-size:11px; opacity:.9;}
-
-  /* --- Tarjetas de mes (acordeón) --- */
   .tarjeta-mes{margin:0 12px 12px; border-radius:14px; background:#fff; box-shadow:0 2px 6px rgba(0,0,0,.1); overflow:hidden;}
   .tm-cabecera{display:flex; justify-content:space-between; align-items:center; padding:14px 16px; cursor:pointer;}
   .tm-cabecera .etiqueta{font-weight:700; font-size:15px;}
@@ -94,9 +91,6 @@
   .tm-editar{background:#e1bee7; color:#4a148c;}
   .tm-borrar{background:#ffcdd2; color:#c62828;}
   .badge-mes-activo{display:inline-block; background:#fff3e0; color:#e65100; font-size:10.5px; font-weight:700; border-radius:6px; padding:2px 6px; margin-left:6px;}
-
-  .banner-modo{margin:12px; padding:12px 16px; border-radius:12px; font-size:13px; font-weight:600; display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; background:#e1bee7; color:#4a148c;}
-  .banner-modo button{background:#4a148c; color:#fff; border:none; border-radius:8px; padding:6px 10px; font-size:12px; font-weight:700;}
 
   #overlayModal{display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:50; align-items:center; justify-content:center; padding:20px;}
   #overlayModal.visible{display:flex;}
@@ -116,12 +110,11 @@
     <button id="tabRegistro" class="activo" onclick="mostrarPagina('registro')">📝 Registro</button>
     <button id="tabEvolucion" onclick="mostrarPagina('evolucion')">📈 Mis meses</button>
   </nav>
-  <div class="mes-actual-tag" id="mesActualTag">📝 Estás registrando: —</div>
+  <div class="mes-actual-tag" id="mesActualTag"></div>
 </header>
 
 <div id="paginaRegistro" class="pagina activa">
 
-<div id="bannerModo"></div>
 <div id="racha"></div>
 
 <div class="seccion">
@@ -225,7 +218,6 @@
 </div>
 
 <div id="paginaEvolucion" class="pagina">
-
   <div class="resumen-general">
     <h3>📊 Tu resumen general</h3>
     <div class="rg-grid">
@@ -235,10 +227,8 @@
       <div class="rg-item"><span class="num" id="rg_promedio">$0</span><span class="lbl">te sobra en promedio al mes</span></div>
     </div>
   </div>
-
   <div id="evolucionVacio" class="seccion vacio" style="margin-top:0;">Todavía no has guardado ningún mes. Ve a "Registro", llena tus datos y toca "Guardar este mes".</div>
   <div id="evolucionLista"></div>
-
 </div>
 
 <div id="overlayModal">
@@ -249,11 +239,13 @@
 </div>
 
 <script>
-const CLAVE_LS = 'controlFinancieroMX_v5';
+const CLAVE_LS = 'controlFinancieroMX_v6';
 const fmt = new Intl.NumberFormat('es-MX', {style:'currency', currency:'MXN', maximumFractionDigits:0});
 
-let estado = { borrador:{}, deudas:[], historial:[], mesActivo:null, modo:'actual', claveVista:null };
-let tarjetaAbierta = null;
+// mesActual: avanza SOLO cuando el usuario decide "empezar el mes siguiente".
+// mesEnPantalla: el mes que se está viendo/editando ahora en "Registro" (normalmente = mesActual,
+// pero cambia temporalmente si el usuario entra a "Corregir" un mes anterior).
+let estado = { borradores:{}, deudas:[], historial:[], mesActual:null, mesEnPantalla:null };
 
 const CAMPOS_NUM = ['salario','otrosIngresos','renta','agua','luz','gas','telefono','internet','transporte',
   'gasolina','seguros','comida','entretenimiento','salud','cuidado','educacion','mascotas','ropa','gimnasio',
@@ -291,24 +283,25 @@ function etiquetaDeClave(clave){
   return txt.charAt(0).toUpperCase()+txt.slice(1);
 }
 function siguienteClave(clave){ let [y,m]=clave.split('-').map(Number); m+=1; if(m>12){m=1;y+=1;} return y+'-'+String(m).padStart(2,'0'); }
-function claveActiva(){ return estado.mesActivo || claveMesReal(); }
-function etiquetaActiva(){ return etiquetaDeClave(claveActiva()); }
+function claveEnPantalla(){ return estado.mesEnPantalla || estado.mesActual || claveMesReal(); }
+function etiquetaEnPantalla(){ return etiquetaDeClave(claveEnPantalla()); }
 
 function cargarEstado(){
   const raw = localStorage.getItem(CLAVE_LS);
   if(raw){
     try{
       const g = JSON.parse(raw);
-      estado.borrador = g.borrador || {};
+      estado.borradores = g.borradores || {};
       estado.deudas = g.deudas || [];
       estado.historial = g.historial || [];
-      estado.mesActivo = g.mesActivo || claveMesReal();
-    }catch(e){ estado.mesActivo = claveMesReal(); }
-  } else { estado.mesActivo = claveMesReal(); }
+      estado.mesActual = g.mesActual || claveMesReal();
+      estado.mesEnPantalla = estado.mesActual;
+    }catch(e){ estado.mesActual = claveMesReal(); estado.mesEnPantalla = estado.mesActual; }
+  } else { estado.mesActual = claveMesReal(); estado.mesEnPantalla = estado.mesActual; }
   if(estado.deudas.length===0){ estado.deudas = [ nuevaDeuda() ]; }
 }
 function guardarEstado(){
-  localStorage.setItem(CLAVE_LS, JSON.stringify({ borrador: estado.borrador, deudas: estado.deudas, historial: estado.historial, mesActivo: estado.mesActivo }));
+  localStorage.setItem(CLAVE_LS, JSON.stringify({ borradores: estado.borradores, deudas: estado.deudas, historial: estado.historial, mesActual: estado.mesActual }));
 }
 
 function nuevaDeuda(nombre, saldo, pago){ return { id:'d'+Math.random().toString(36).slice(2,9), nombre:nombre||'', saldo:saldo||0, pago:pago||0 }; }
@@ -319,34 +312,37 @@ function quitarDeuda(id){
 }
 
 function renderDeudas(){
-  const soloLectura = estado.modo!=='actual';
   const cont = document.getElementById('deudasContenedor');
   cont.innerHTML = '';
   estado.deudas.forEach(d=>{
     const div = document.createElement('div');
     div.className = 'deuda-bloque';
     div.innerHTML = `
-      ${soloLectura?'':'<button class="quitar" onclick="quitarDeuda(\''+d.id+'\')">✕ quitar</button>'}
-      <div class="fila"><label>Nombre</label><input type="text" data-deuda="${d.id}" data-campo="nombre" placeholder="Ej. Tarjeta BBVA" value="${d.nombre||''}" ${soloLectura?'readonly':''}></div>
-      <div class="fila"><label>Saldo pendiente</label><input type="number" data-deuda="${d.id}" data-campo="saldo" inputmode="decimal" value="${d.saldo||0}" ${soloLectura?'readonly':''}></div>
-      <div class="fila"><label>Pago mensual</label><input type="number" data-deuda="${d.id}" data-campo="pago" inputmode="decimal" value="${d.pago||0}" ${soloLectura?'readonly':''}></div>
+      <button class="quitar" onclick="quitarDeuda('${d.id}')">✕ quitar</button>
+      <div class="fila"><label>Nombre</label><input type="text" data-deuda="${d.id}" data-campo="nombre" placeholder="Ej. Tarjeta BBVA" value="${d.nombre||''}"></div>
+      <div class="fila"><label>Saldo pendiente</label><input type="number" data-deuda="${d.id}" data-campo="saldo" inputmode="decimal" value="${d.saldo||0}"></div>
+      <div class="fila"><label>Pago mensual</label><input type="number" data-deuda="${d.id}" data-campo="pago" inputmode="decimal" value="${d.pago||0}"></div>
     `;
     cont.appendChild(div);
   });
-  if(!soloLectura){
-    cont.querySelectorAll('input').forEach(inp=>{
-      inp.addEventListener('input', ()=>{
-        const d = estado.deudas.find(x=>x.id===inp.dataset.deuda);
-        if(!d) return;
-        d[inp.dataset.campo] = inp.dataset.campo==='nombre' ? inp.value : (parseFloat(inp.value)||0);
-        calcular();
-      });
+  cont.querySelectorAll('input').forEach(inp=>{
+    inp.addEventListener('input', ()=>{
+      const d = estado.deudas.find(x=>x.id===inp.dataset.deuda);
+      if(!d) return;
+      d[inp.dataset.campo] = inp.dataset.campo==='nombre' ? inp.value : (parseFloat(inp.value)||0);
+      calcular();
     });
-  }
+  });
 }
 
 function totalesDeudas(deudas){ return deudas.reduce((acc,d)=>{ acc.saldo+=Number(d.saldo)||0; acc.pago+=Number(d.pago)||0; return acc; }, {saldo:0, pago:0}); }
-function ahorroHistoricoAcumulado(){ return estado.historial.filter(h=>h.clave!==claveActiva()).reduce((s,h)=> s + (h.ahorro||0), 0); }
+
+// Suma el ahorro de TODOS los meses guardados EXCEPTO el que se está editando ahora mismo,
+// para nunca sumarlo dos veces (una desde el historial y otra desde el campo que se está escribiendo).
+// Esto se recalcula desde cero cada vez, sin ningún contador que se vaya sumando/restando con el tiempo,
+// por lo que el ahorro NO puede sufrir el mismo tipo de bug de doble conteo que la deuda.
+function ahorroHistoricoAcumulado(){ return estado.historial.filter(h=>h.clave!==claveEnPantalla()).reduce((s,h)=> s + (h.ahorro||0), 0); }
+
 function deudaBase(totalDeudaActual){
   if(estado.historial.length===0) return totalDeudaActual;
   const masAntiguo = [...estado.historial].sort((a,b)=>a.clave.localeCompare(b.clave))[0];
@@ -369,11 +365,20 @@ function fechaEnMeses(meses){ const f=new Date(); f.setMonth(f.getMonth()+meses)
 function pintarRacha(){
   const n = estado.historial.length;
   document.getElementById('racha').innerHTML = n>0 ? `🔥 Llevas <b>${n} ${n===1?'mes':'meses'}</b> registrando tus finanzas. ¡Sigue así!` : '';
-  document.getElementById('mesActualTag').textContent = '📝 Estás registrando: ' + etiquetaActiva();
+}
+function pintarEtiquetaSuperior(){
+  const tag = document.getElementById('mesActualTag');
+  const corrigiendo = claveEnPantalla() !== estado.mesActual;
+  if(corrigiendo){
+    tag.className = 'mes-actual-tag corrigiendo';
+    tag.innerHTML = '✏️ Corrigiendo: <b>'+etiquetaEnPantalla()+'</b> <button onclick="volverAMiMesActual()">Volver a mi mes actual</button>';
+  } else {
+    tag.className = 'mes-actual-tag';
+    tag.innerHTML = '📝 Estás registrando: <b>'+etiquetaEnPantalla()+'</b>';
+  }
 }
 
 function calcular(){
-  if(estado.modo!=='actual') return;
   const t = totales();
   document.getElementById('totalIngresos').textContent = fmt.format(t.totalIngresos);
   document.getElementById('totalGastos').textContent = fmt.format(t.totalGastos);
@@ -440,83 +445,123 @@ function calcular(){
       : `<div class="milestone">🎯 Te faltan ${fmt.format(siguienteMeta-acumuladoHoy)} para llegar a ${fmt.format(siguienteMeta)} ahorrados.</div>`;
   } else { milestoneCont.innerHTML = ''; }
 
-  estado.borrador = recogerBorrador();
+  estado.borradores[claveEnPantalla()] = recogerBorrador();
   guardarEstado();
+  pintarEtiquetaSuperior();
 }
 
 function recogerBorrador(){ const data={}; CAMPOS_NUM.forEach(id=>{ const el=document.getElementById(id); data[id]= el? el.value : '0'; }); return data; }
 function aplicarBorrador(data){ CAMPOS_NUM.forEach(id=>{ const el=document.getElementById(id); if(el) el.value = (data && data[id]!==undefined) ? data[id] : ''; }); }
-function ponerSoloLecturaBorrador(soloLectura){ CAMPOS_NUM.forEach(id=>{ const el=document.getElementById(id); if(el){ if(soloLectura) el.setAttribute('readonly','readonly'); else el.removeAttribute('readonly'); } }); }
+
+function cargarBorradorDe(clave){
+  if(estado.borradores[clave]) return estado.borradores[clave];
+  const reg = estado.historial.find(h=>h.clave===clave);
+  if(reg && reg.campos) return reg.campos;
+  return {};
+}
 
 function guardarMes(){
-  if(estado.modo!=='actual'){ avisoModal('Estás viendo un mes guardado. Toca "Volver al mes actual" antes de guardar.'); return; }
-  const t = totales();
-  const clave = claveActiva(); const etiqueta = etiquetaActiva();
-  const yaExiste = estado.historial.some(h=>h.clave===clave);
-  const registro = { clave, etiqueta, ingresos:t.totalIngresos, gastos:t.totalGastos, deuda:t.totalDeuda,
-    pagoDeuda:t.totalPagoDeuda, ahorro:t.ahorro, disponible:t.disponible, deudasDetalle: JSON.parse(JSON.stringify(estado.deudas)) };
+  const clave = claveEnPantalla();
+  const etiqueta = etiquetaEnPantalla();
+  const camposSnapshot = recogerBorrador();
+  const existenteIdx = estado.historial.findIndex(h=>h.clave===clave);
+  const existente = existenteIdx>=0 ? estado.historial[existenteIdx] : null;
 
-  const preguntarSaldos = ()=>{
-    const idx = estado.historial.findIndex(h=>h.clave===clave);
-    if(idx>=0) estado.historial[idx]=registro; else estado.historial.push(registro);
+  const continuarConSaldos = ()=>{
+    // Si este mes ya había aplicado antes un pago a las deudas, primero lo revertimos
+    // (sumamos de vuelta lo que se había restado) para poder recalcular sin duplicar.
+    // IMPORTANTE: esto debe pasar ANTES de calcular los totales que se van a guardar,
+    // para que el total de deuda guardado siempre refleje el saldo ya corregido y
+    // nunca un valor viejo capturado antes de deshacer el pago anterior.
+    if(existente && existente.pagoAplicadoDetalle && existente.pagoAplicadoDetalle.length){
+      existente.pagoAplicadoDetalle.forEach(ap=>{
+        const d = estado.deudas.find(x=>x.id===ap.id);
+        if(d) d.saldo = (Number(d.saldo)||0) + ap.monto;
+      });
+    }
+    const t = totales();
     confirmarModal(
       '¿Quieres que reste de tus deudas lo que pagaste este mes?\n\nSi aceptas, el saldo pendiente bajará automáticamente para el próximo mes.',
       'Sí, actualizar saldos', 'No, dejarlos igual',
-      ()=>{ estado.deudas.forEach(d=>{ d.saldo = Math.max(0, (Number(d.saldo)||0) - (Number(d.pago)||0)); }); preguntarSiguienteMes(registro); },
-      ()=>{ preguntarSiguienteMes(registro); }
+      ()=>{
+        const aplicado = estado.deudas.map(d=>{
+          const saldoAntes = Number(d.saldo)||0;
+          const monto = Math.min(Number(d.pago)||0, saldoAntes);
+          d.saldo = Math.max(0, saldoAntes - monto);
+          return {id:d.id, monto};
+        });
+        finalizarGuardado(clave, etiqueta, t, camposSnapshot, aplicado);
+      },
+      ()=>{ finalizarGuardado(clave, etiqueta, t, camposSnapshot, []); }
     );
   };
-  if(yaExiste){ confirmarModal('Ya guardaste datos de '+etiqueta+'.\n\n¿Quieres reemplazarlos con los datos actuales?', 'Sí, reemplazar', 'No, cancelar', preguntarSaldos); }
-  else { preguntarSaldos(); }
+
+  if(existente){
+    confirmarModal('Ya guardaste datos de '+etiqueta+'.\n\n¿Quieres reemplazarlos con los datos actuales?', 'Sí, reemplazar', 'No, cancelar', continuarConSaldos);
+  } else { continuarConSaldos(); }
 }
 
-function preguntarSiguienteMes(registro){
+function finalizarGuardado(clave, etiqueta, t, camposSnapshot, pagoAplicadoDetalle){
+  const registro = { clave, etiqueta, ingresos:t.totalIngresos, gastos:t.totalGastos, deuda:t.totalDeuda,
+    pagoDeuda:t.totalPagoDeuda, ahorro:t.ahorro, disponible:t.disponible,
+    campos: camposSnapshot, deudasDetalle: JSON.parse(JSON.stringify(estado.deudas)), pagoAplicadoDetalle };
+  const idx = estado.historial.findIndex(h=>h.clave===clave);
+  if(idx>=0) estado.historial[idx]=registro; else estado.historial.push(registro);
   guardarEstado(); renderDeudas(); pintarRacha(); calcular();
-  confirmarModal(
-    '✅ '+registro.etiqueta+' quedó guardado.\n\n¿Quieres empezar ya a registrar '+etiquetaDeClave(siguienteClave(registro.clave))+'?',
-    'Sí, empezar el siguiente', 'No, quedarme aquí',
-    ()=>{
-      estado.mesActivo = siguienteClave(registro.clave);
-      estado.borrador = {};
-      CAMPOS_NUM.forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
-      guardarEstado(); renderDeudas(); pintarRacha(); calcular();
-      mostrarPagina('registro');
-      avisoModal('🎉 ¡Iniciaste ' + etiquetaActiva() + '!');
-    },
-    ()=>{ mostrarPagina('evolucion'); }
-  );
+
+  const esMesEnCurso = (clave === estado.mesActual);
+  if(esMesEnCurso){
+    confirmarModal(
+      '✅ '+etiqueta+' quedó guardado.\n\n¿Quieres empezar ya a registrar '+etiquetaDeClave(siguienteClave(clave))+'?',
+      'Sí, empezar el siguiente', 'No, quedarme aquí',
+      ()=>{
+        estado.mesActual = siguienteClave(clave);
+        estado.mesEnPantalla = estado.mesActual;
+        aplicarBorrador(cargarBorradorDe(estado.mesEnPantalla));
+        guardarEstado(); calcular();
+        mostrarPagina('registro');
+        avisoModal('🎉 ¡Iniciaste ' + etiquetaEnPantalla() + '!');
+      },
+      ()=>{ mostrarPagina('evolucion'); }
+    );
+  } else {
+    avisoModal('✅ '+etiqueta+' se corrigió correctamente.', ()=>{
+      estado.mesEnPantalla = estado.mesActual;
+      aplicarBorrador(cargarBorradorDe(estado.mesEnPantalla));
+      calcular();
+      mostrarPagina('evolucion');
+    });
+  }
+}
+
+function volverAMiMesActual(){
+  estado.mesEnPantalla = estado.mesActual;
+  aplicarBorrador(cargarBorradorDe(estado.mesEnPantalla));
+  renderDeudas(); calcular();
 }
 
 function borrarMes(clave){
   confirmarModal('¿Borrar este mes de tu evolución?\n\nNo se puede deshacer.', 'Sí, borrar', 'No, conservar', ()=>{
     estado.historial = estado.historial.filter(h=>h.clave!==clave);
     guardarEstado(); pintarRacha(); renderEvolucion();
-    if(estado.modo==='actual') calcular();
+    calcular();
   });
 }
 
+let tarjetaAbierta = null;
 function alternarTarjeta(clave){ tarjetaAbierta = (tarjetaAbierta===clave) ? null : clave; renderEvolucion(); }
 
-function corregirMes(clave){
-  const reg = estado.historial.find(h=>h.clave===clave);
-  if(!reg) return;
-  confirmarModal('Esto copiará los datos de '+reg.etiqueta+' al mes que estás registrando ahora ('+etiquetaActiva()+') para que los corrijas y los guardes de nuevo.\n\n¿Continuar?', 'Sí, copiar', 'No, cancelar', ()=>{
-    estado.borrador = { salario:'', otrosIngresos:String(reg.ingresos), otrosGastos:String(reg.gastos), ahorro:String(reg.ahorro||0) };
-    CAMPOS_NUM.forEach(c=>{ if(estado.borrador[c]===undefined) estado.borrador[c]='0'; });
-    estado.deudas = reg.deudasDetalle && reg.deudasDetalle.length ? JSON.parse(JSON.stringify(reg.deudasDetalle)) : [nuevaDeuda()];
-    aplicarBorrador(estado.borrador);
-    renderDeudas();
-    calcular();
-    mostrarPagina('registro');
-    avisoModal('Datos copiados a '+etiquetaActiva()+'. Corrígelos y toca "Guardar" cuando termines.');
-  });
+function editarMes(clave){
+  estado.mesEnPantalla = clave;
+  aplicarBorrador(cargarBorradorDe(clave));
+  calcular();
+  mostrarPagina('registro');
+  window.scrollTo(0,0);
 }
-
-function actualizarBadgeActivo(){}
 
 function reiniciar(){
   confirmarModal('¿Borrar solo lo escrito en el registro de este mes?\n\nTu historial guardado y tu lista de deudas NO se borran.', 'Sí, borrar', 'No, cancelar', ()=>{
-    estado.borrador = {};
+    estado.borradores[claveEnPantalla()] = {};
     CAMPOS_NUM.forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
     guardarEstado(); calcular();
   });
@@ -538,12 +583,13 @@ function importarRespaldo(ev){
     try{
       const datos = JSON.parse(e.target.result);
       confirmarModal('Esto reemplazará todos tus datos actuales con los del respaldo.\n\n¿Continuar?', 'Sí, reemplazar', 'No, cancelar', ()=>{
-        estado.borrador = datos.borrador || {};
+        estado.borradores = datos.borradores || {};
         estado.deudas = datos.deudas && datos.deudas.length ? datos.deudas : [nuevaDeuda()];
         estado.historial = datos.historial || [];
-        estado.mesActivo = datos.mesActivo || claveMesReal();
+        estado.mesActual = datos.mesActual || claveMesReal();
+        estado.mesEnPantalla = estado.mesActual;
         guardarEstado();
-        aplicarBorrador(estado.borrador); renderDeudas(); calcular(); renderEvolucion(); pintarRacha();
+        aplicarBorrador(cargarBorradorDe(estado.mesEnPantalla)); renderDeudas(); calcular(); renderEvolucion(); pintarRacha();
         avisoModal('Respaldo importado correctamente.');
       });
     }catch(err){ avisoModal('Ese archivo no es un respaldo válido.'); }
@@ -569,10 +615,10 @@ function renderEvolucion(){
   const lista = document.getElementById('evolucionLista');
   lista.innerHTML = historial.map(h=>{
     const abierta = tarjetaAbierta===h.clave;
-    const esActivo = h.clave===claveActiva();
+    const esActual = h.clave===estado.mesActual;
     return `<div class="tarjeta-mes ${abierta?'abierta':''}">
       <div class="tm-cabecera" onclick="alternarTarjeta('${h.clave}')">
-        <div><span class="etiqueta">${h.etiqueta}</span>${esActivo?'<span class="badge-mes-activo">mes actual</span>':''}
+        <div><span class="etiqueta">${h.etiqueta}</span>${esActual?'<span class="badge-mes-activo">mes actual</span>':''}
           <span class="resumen-corto">Disponible: ${fmt.format(h.disponible)}</span></div>
         <span class="flecha">▾</span>
       </div>
@@ -583,7 +629,7 @@ function renderEvolucion(){
         <div class="tm-fila"><span>Pago a deuda</span><b>${fmt.format(h.pagoDeuda)}</b></div>
         <div class="tm-fila"><span>Ahorro del mes</span><b>${fmt.format(h.ahorro||0)}</b></div>
         <div class="tm-acciones">
-          <button class="tm-editar" onclick="corregirMes('${h.clave}')">✏️ Corregir</button>
+          <button class="tm-editar" onclick="editarMes('${h.clave}')">✏️ Corregir</button>
           <button class="tm-borrar" onclick="borrarMes('${h.clave}')">🗑️ Borrar</button>
         </div>
       </div>
@@ -603,7 +649,7 @@ function mostrarPagina(nombre){
 document.querySelectorAll('#paginaRegistro input[type=number]').forEach(el=>{ if(CAMPOS_NUM.includes(el.id)) el.addEventListener('input', calcular); });
 
 cargarEstado();
-aplicarBorrador(estado.borrador);
+aplicarBorrador(cargarBorradorDe(estado.mesEnPantalla));
 renderDeudas();
 calcular();
 renderEvolucion();
